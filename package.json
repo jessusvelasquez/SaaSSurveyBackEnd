@@ -11,7 +11,8 @@
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "package": "npm run package --workspaces --if-present",
-    "type-check": "node_modules/.bin/tsc --noEmit -p functions/admin-survey/tsconfig.json && node_modules/.bin/tsc --noEmit -p functions/analyze-survey/tsconfig.json && node_modules/.bin/tsc --noEmit -p functions/process-response/tsconfig.json"
+    "type-check": "node_modules/.bin/tsc --noEmit -p functions/admin-survey/tsconfig.json && node_modules/.bin/tsc --noEmit -p functions/analyze-survey/tsconfig.json && node_modules/.bin/tsc --noEmit -p functions/process-response/tsconfig.json",
+    "test": "jest"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.0",

@@ -15,9 +15,13 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.161",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.19.40",
     "@types/uuid": "^9.0.8",
     "esbuild": "^0.20.2",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.9",
+    "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
 }

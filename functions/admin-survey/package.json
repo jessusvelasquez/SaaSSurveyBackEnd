@@ -6,7 +6,8 @@
   "scripts": {
     "build": "esbuild src/handler.ts --bundle --platform=node --target=node20 --outfile=dist/handler.js --external:@aws-sdk/*",
     "package": "npm run build && cd dist && zip -r ../function.zip . && echo '✅ function.zip'",
-    "type-check": "../../node_modules/.bin/tsc --noEmit"
+    "type-check": "../../node_modules/.bin/tsc --noEmit",
+    "test": "jest --coverage"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.0.0",
@@ -15,9 +16,13 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.161",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.19.40",
     "@types/uuid": "^9.0.8",
     "esbuild": "^0.20.2",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.9",
+    "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
 }
