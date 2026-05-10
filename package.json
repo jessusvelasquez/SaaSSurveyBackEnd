@@ -1,0 +1,27 @@
+{
+  "name": "survey-platform",
+  "version": "1.0.0",
+  "description": "Plataforma serverless de encuestas — AWS Lambda + DynamoDB + AppSync",
+  "private": true,
+  "workspaces": [
+    "functions/admin-survey",
+    "functions/analyze-survey",
+    "functions/process-response"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "package": "npm run package --workspaces --if-present",
+    "type-check": "node_modules/.bin/tsc --noEmit -p functions/admin-survey/tsconfig.json && node_modules/.bin/tsc --noEmit -p functions/analyze-survey/tsconfig.json && node_modules/.bin/tsc --noEmit -p functions/process-response/tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.0",
+    "@types/node": "^20.17.10",
+    "@types/uuid": "^9.0.8",
+    "esbuild": "^0.20.2",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}

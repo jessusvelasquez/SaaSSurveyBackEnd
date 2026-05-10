@@ -1,0 +1,32 @@
+type Query {
+  getSurveyResults(surveyId: String!): [SurveyResult]
+}
+
+type Mutation {
+  updateSurveyResult(input: SurveyResultInput!): SurveyResult
+}
+
+type Subscription {
+  onSurveyResultUpdated(surveyId: String!): SurveyResult
+    @aws_subscribe(mutations: ["updateSurveyResult"])
+}
+
+type SurveyResult {
+  surveyId: String!
+  questionId: String!
+  questionText: String
+  questionType: String
+  totalResponses: Int
+  aggregatedData: AWSJSON
+  updatedAt: String
+}
+
+input SurveyResultInput {
+  surveyId: String!
+  questionId: String!
+  questionText: String
+  questionType: String
+  totalResponses: Int
+  aggregatedData: AWSJSON
+  updatedAt: String
+}
