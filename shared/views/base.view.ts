@@ -8,8 +8,6 @@ const CORS_HEADERS: Record<string, string> = {
 };
 
 // Shared HTTP response factory — todas las Lambdas usan estas helpers (DRY)
-// Ahora son funciones puras en lugar de métodos estáticos
-
 export const ok = <T>(data: T): APIGatewayProxyResult => {
   return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify(data) };
 };

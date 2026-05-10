@@ -1,6 +1,6 @@
 import { Survey, Question, CreateSurveyDto, UpdateSurveyDto, CreateQuestionDto, UpdateQuestionDto } from '../types';
 
-// ISP: lecturas y escrituras definidas en una interfaz cohesiva por entidad
+// ISP: lecturas y escrituras definidas en una interfaz por entidad
 export interface ISurveyRepository {
   findAll(): Promise<Survey[]>;
   findById(surveyId: string): Promise<Survey | null>;

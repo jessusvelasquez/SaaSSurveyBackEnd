@@ -78,7 +78,7 @@ export interface QuestionAnalytics {
   questionText: string;
   questionType: QuestionType;
   totalResponses: number;
-  aggregatedData: Record<string, number>; // optionId or text → count
+  aggregatedData: Record<string, number>;
   updatedAt: string;
 }
 

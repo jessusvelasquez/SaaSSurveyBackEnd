@@ -1,4 +1,4 @@
-# SaaS Survey Platform - Backend
+# 🚀 Plataforma de Encuestas SaaS - Backend
 
 Backend serverless para una plataforma de encuestas con analíticas en tiempo real. Construido con Node.js, AWS Lambda, DynamoDB y AppSync.
 
@@ -43,15 +43,31 @@ Cada Lambda requiere las siguientes variables configuradas:
 - `APPSYNC_API_URL`: URL del endpoint de AppSync (solo para `analyze-survey`).
 - `APPSYNC_API_KEY`: API Key de AppSync (solo para `analyze-survey`).
 
-## Desarrollo y Build
+## 🚀 Instalación y Configuración local
 
-### Instalación de dependencias
-```bash
-npm install
-```
+### Requisitos previos
+- Node.js (v20 o superior)
+- NPM (v10 o superior)
+- AWS CLI configurado
 
-### Compilación (Build)
-El proyecto usa `esbuild` para generar bundles ligeros para Lambda.
+### Pasos para comenzar
+1. **Clonar el repositorio:**
+   ```bash
+   git clone https://github.com/jessusvelasquez/SaaSSurveyBackEnd.git
+   cd SaaSSurveyBackEnd
+   ```
+
+2. **Instalar dependencias del Monorepo:**
+   ```bash
+   npm install
+   ```
+
+3. **Configurar el entorno:**
+   Cada Lambda en `functions/` puede requerir sus propias variables de entorno en AWS, pero para el desarrollo local y empaquetado, asegúrate de tener los nombres de las tablas correctos.
+
+### Construcción y Despliegue
+
+El proyecto utiliza **NPM Workspaces** para gestionar las múltiples Lambdas.
 ```bash
 npm run build
 ```
