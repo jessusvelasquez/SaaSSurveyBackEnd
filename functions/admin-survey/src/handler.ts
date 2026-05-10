@@ -11,8 +11,11 @@ type RouteHandler = (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResu
 
 const routes: Record<string, Record<string, RouteHandler>> = {
   '/surveys': {
-    GET: () => surveyController.list(repository),
+    GET: (event) => surveyController.list(repository, event),
     POST: (event) => surveyController.create(repository, event),
+  },
+  '/surveys/public': {
+    GET: (event) => surveyController.list(repository, event),
   },
   '/surveys/{surveyId}': {
     GET: (event) => surveyController.get(repository, event),
@@ -27,7 +30,7 @@ const routes: Record<string, Record<string, RouteHandler>> = {
     DELETE: (event) => surveyController.removeQuestion(repository, event),
   },
   '/surveys/{surveyId}/results': {
-    GET: (event) => surveyController.getResults(event),
+    GET: (event) => surveyController.getResults(repository, event),
   },
 };
 

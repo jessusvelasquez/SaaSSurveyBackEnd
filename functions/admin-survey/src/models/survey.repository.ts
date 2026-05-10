@@ -24,17 +24,20 @@ const getClient = (): DynamoDBDocumentClient => getDynamoDBClient();
 
 // ─── Survey Operations ────────────────────────────────────────────────────────
 
-export const findAll = async (): Promise<Survey[]> => {
+export const findAll = async (userId: string): Promise<Survey[]> => {
   const client = getClient();
   const items: Survey[] = [];
   let lastKey: Record<string, any> | undefined;
 
-  // Paginación: itera hasta que no haya más resultados
   do {
     const res = await client.send(
       new ScanCommand({
         TableName: SURVEYS_TABLE,
         ExclusiveStartKey: lastKey,
+        FilterExpression: 'ownerId = :userId',
+        ExpressionAttributeValues: {
+          ':userId': userId,
+        },
       })
     );
     items.push(...((res.Items ?? []) as Survey[]));
@@ -44,19 +47,22 @@ export const findAll = async (): Promise<Survey[]> => {
   return items;
 };
 
-export const findById = async (surveyId: string): Promise<Survey | null> => {
+export const findById = async (surveyId: string, userId: string): Promise<Survey | null> => {
   const client = getClient();
   const res = await client.send(
     new GetCommand({ TableName: SURVEYS_TABLE, Key: { surveyId } })
   );
-  return (res.Item as Survey) ?? null;
+  const survey = res.Item as Survey;
+  if (!survey || survey.ownerId !== userId) return null;
+  return survey;
 };
 
-export const create = async (dto: CreateSurveyDto): Promise<Survey> => {
+export const create = async (userId: string, dto: CreateSurveyDto): Promise<Survey> => {
   const client = getClient();
   const now = new Date().toISOString();
   const survey: Survey = {
     surveyId: uuidv4(),
+    ownerId: userId,
     title: dto.title,
     description: dto.description ?? '',
     questions: [],
@@ -70,28 +76,35 @@ export const create = async (dto: CreateSurveyDto): Promise<Survey> => {
 
 export const update = async (
   surveyId: string,
+  userId: string,
   dto: UpdateSurveyDto
 ): Promise<Survey | null> => {
   const client = getClient();
-  const existing = await findById(surveyId);
+  const existing = await findById(surveyId, userId);
   if (!existing) return null;
 
   const updated: Survey = { ...existing, ...dto, updatedAt: new Date().toISOString() };
 
-  // ConditionExpression: solo actualiza si el item existe.
   await client.send(
     new PutCommand({
       TableName: SURVEYS_TABLE,
       Item: updated,
-      ConditionExpression: 'attribute_exists(surveyId)',
+      ConditionExpression: 'attribute_exists(surveyId) AND ownerId = :userId',
+      ExpressionAttributeValues: {
+        ':userId': userId,
+      },
     })
   );
 
   return updated;
 };
 
-export const deleteSurvey = async (surveyId: string): Promise<void> => {
+export const deleteSurvey = async (surveyId: string, userId: string): Promise<void> => {
   const client = getClient();
+  // Validamos propiedad antes de borrar
+  const existing = await findById(surveyId, userId);
+  if (!existing) return;
+
   await client.send(new DeleteCommand({ TableName: SURVEYS_TABLE, Key: { surveyId } }));
 };
 
@@ -99,11 +112,12 @@ export const deleteSurvey = async (surveyId: string): Promise<void> => {
 
 export const addQuestion = async (
   surveyId: string,
+  userId: string,
   dto: CreateQuestionDto
 ): Promise<Question> => {
   const client = getClient();
-  const existing = await findById(surveyId);
-  if (!existing) throw new Error(`Survey ${surveyId} not found`);
+  const existing = await findById(surveyId, userId);
+  if (!existing) throw new Error(`Survey ${surveyId} not found or access denied`);
 
   const question: Question = {
     id: uuidv4(),
@@ -120,7 +134,8 @@ export const addQuestion = async (
     new PutCommand({
       TableName: SURVEYS_TABLE,
       Item: { ...existing, questions, updatedAt: new Date().toISOString() },
-      ConditionExpression: 'attribute_exists(surveyId)',
+      ConditionExpression: 'attribute_exists(surveyId) AND ownerId = :userId',
+      ExpressionAttributeValues: { ':userId': userId }
     })
   );
 
@@ -130,10 +145,11 @@ export const addQuestion = async (
 export const updateQuestion = async (
   surveyId: string,
   questionId: string,
+  userId: string,
   dto: UpdateQuestionDto
 ): Promise<Question | null> => {
   const client = getClient();
-  const existing = await findById(surveyId);
+  const existing = await findById(surveyId, userId);
   if (!existing) return null;
 
   const idx = existing.questions.findIndex((q) => q.id === questionId);
@@ -147,7 +163,8 @@ export const updateQuestion = async (
     new PutCommand({
       TableName: SURVEYS_TABLE,
       Item: { ...existing, questions, updatedAt: new Date().toISOString() },
-      ConditionExpression: 'attribute_exists(surveyId)',
+      ConditionExpression: 'attribute_exists(surveyId) AND ownerId = :userId',
+      ExpressionAttributeValues: { ':userId': userId }
     })
   );
 
@@ -156,10 +173,11 @@ export const updateQuestion = async (
 
 export const deleteQuestion = async (
   surveyId: string,
-  questionId: string
+  questionId: string,
+  userId: string
 ): Promise<void> => {
   const client = getClient();
-  const existing = await findById(surveyId);
+  const existing = await findById(surveyId, userId);
   if (!existing) return;
 
   const questions = existing.questions.filter((q) => q.id !== questionId);
@@ -168,15 +186,49 @@ export const deleteQuestion = async (
     new PutCommand({
       TableName: SURVEYS_TABLE,
       Item: { ...existing, questions, updatedAt: new Date().toISOString() },
-      ConditionExpression: 'attribute_exists(surveyId)',
+      ConditionExpression: 'attribute_exists(surveyId) AND ownerId = :userId',
+      ExpressionAttributeValues: { ':userId': userId }
     })
   );
+};
+
+export const findPublic = async (): Promise<Survey[]> => {
+  const client = getClient();
+  const items: Survey[] = [];
+  let lastKey: Record<string, any> | undefined;
+
+  do {
+    const res = await client.send(
+      new ScanCommand({
+        TableName: SURVEYS_TABLE,
+        ExclusiveStartKey: lastKey,
+        FilterExpression: 'isPublished = :pub',
+        ExpressionAttributeValues: {
+          ':pub': true,
+        },
+      })
+    );
+    items.push(...((res.Items ?? []) as Survey[]));
+    lastKey = res.LastEvaluatedKey;
+  } while (lastKey);
+
+  return items;
+};
+
+export const findAnyById = async (surveyId: string): Promise<Survey | null> => {
+  const client = getClient();
+  const res = await client.send(
+    new GetCommand({ TableName: SURVEYS_TABLE, Key: { surveyId } })
+  );
+  return (res.Item as Survey) ?? null;
 };
 
 // Implementación de ISurveyRepository usando las funciones
 export const dynamoSurveyRepository: ISurveyRepository = {
   findAll,
+  findPublic,
   findById,
+  findAnyById,
   create,
   update,
   delete: deleteSurvey,

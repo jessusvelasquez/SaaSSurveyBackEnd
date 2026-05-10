@@ -18,6 +18,7 @@ export interface Question {
 // ─── Survey ───────────────────────────────────────────────────────────────────
 export interface Survey {
   surveyId: string;
+  ownerId: string;
   title: string;
   description: string;
   questions: Question[];
